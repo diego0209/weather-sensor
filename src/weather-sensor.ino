@@ -21,7 +21,8 @@ Adafruit_SI1145 uv = Adafruit_SI1145(); // UV sensor
 
 Adafruit_BME280 bme; // I2C sensor
 
-bool displaySensor; // Chooses which sensor displays info
+bool displayBME;
+bool displaySI;
 
 /*
  * setup function
@@ -29,7 +30,8 @@ bool displaySensor; // Chooses which sensor displays info
 void setup() {
   Serial.begin(9600);
 
-  displaySensor = true;
+  displayBME = true;
+  displaySI = false;
 
   // Screen setup
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
@@ -50,6 +52,8 @@ void setup() {
   } else if (! uv.begin()) {
     Serial.println("Didn't find SI1145");
   }
+
+  digitalWrite(BUILTIN_LED, HIGH);
 }
 
 /*
@@ -125,14 +129,20 @@ void readUV(bool enableDisplay) {
  */
 void loop() {
   if(!digitalRead(BUTTON_A)) {
-    displaySensor = true; // Displays BME280
+    displayBME = true; // Displays BME280
+    displaySI = false;
   }
   if(!digitalRead(BUTTON_B)) {
-    displaySensor = false; // Displays SI1145
+    displayBME = false; // Displays SI1145
+    displaySI = true;
+  }
+  if(!digitalRead(BUTTON_C)) {
+    displayBME = false;
+    displaySI = false;
   }
   display.clearDisplay();
-  readPressure(displaySensor);
-  readUV(!displaySensor);
+  readPressure(displayBME);
+  readUV(displaySI);
   delay(100);
   yield();
   display.display();
