@@ -1,5 +1,7 @@
 #include <Wire.h>
 #include <SPI.h>
+#include <Time.h>
+#include <SD.h>
 // SI1145
 #include "Adafruit_SI1145.h"
 // BME280
@@ -8,12 +10,8 @@
 // SSD1306
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-// SD
-#include <SD.h>
 
 #define chipSelect 4
-
-File dataFile; // Pointer to file in SD card
 
 Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire);
 
@@ -26,8 +24,6 @@ Adafruit_SI1145 uv = Adafruit_SI1145(); // SI1145 sensor
 
 Adafruit_BME280 bme; // BME280 sensor
 
-#define SEALEVELPRESSURE_HPA (1013.25)
-
 bool displayBME; // Determines display of BME on screen
 bool displaySI; // Determies display of SI on screen
 
@@ -36,7 +32,6 @@ bool displaySI; // Determies display of SI on screen
  */
 void setup() {
   Serial.begin(9600);
-  
   digitalWrite(BUILTIN_LED, HIGH);
   Serial.println("On setup...");
   
@@ -50,8 +45,7 @@ void setup() {
   pinMode(BUTTON_A, INPUT_PULLUP);
   pinMode(BUTTON_B, INPUT_PULLUP);
   pinMode(BUTTON_C, INPUT_PULLUP);
-
-  // text display tests
+  
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
@@ -65,18 +59,19 @@ void setup() {
     while(1);
   }
 
-  Serial.print("Initializing SD card...");
+  // SD setup
+  Serial.print("Initializing SD card... ");
 
-  // see if the card is present and can be initialized:
+  // Checks if the card is present and can be initialized:
   if (!SD.begin(chipSelect)) {
-    Serial.println("Card failed, or not present");
+    Serial.println("card failed, or not present");
     while (1);
   }
   Serial.println("card initialized.");
 
   dataFile = SD.open("data.csv", FILE_WRITE);
   if(dataFile) {
-    dataFile.println("Date, Temp, Pressure, Humidity, Visible, IR, UV");
+    dataFile.println("Date, Time, Temp, Pressure, Humidity, Visible, IR, UV");
     dataFile.close();
     Serial.println("Wrote on SD card");
   } else {
@@ -93,17 +88,16 @@ void loop() {
   if(!digitalRead(BUTTON_A)) {
     displayBME = true; // Displays BME280
     displaySI = false;
-  }
-  if(!digitalRead(BUTTON_B)) {
+  } else if(!digitalRead(BUTTON_B)) {
     displayBME = false; // Displays SI1145
     displaySI = true;
-  }
-  if(!digitalRead(BUTTON_C)) {
+  } else if(!digitalRead(BUTTON_C)) {
     displayBME = false;
     displaySI = false;
   }
   
   display.clearDisplay();
+  File dataFile; // Pointer to file in SD card
   dataFile = SD.open("data.csv", FILE_WRITE);
   if(!dataFile) {
     Serial.println("Could not open file");
