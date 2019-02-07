@@ -2,6 +2,8 @@
 #include <SPI.h>
 #include <Time.h>
 #include <SD.h>
+#include <Wire.h>
+#include "RTClib.h"
 // SI1145
 #include "Adafruit_SI1145.h"
 // BME280
@@ -12,6 +14,8 @@
 #include <Adafruit_SSD1306.h>
 
 #define chipSelect 4
+
+RTC_DS3231 rtc;
 
 Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire);
 
@@ -33,8 +37,8 @@ bool displaySI; // Determines whether to display the info of SI1145 on screen
 void setup() {
   Serial.begin(9600);
   digitalWrite(BUILTIN_LED, HIGH);
-  Serial.println("On setup...");
-  
+  Serial.println("On setup... ");
+
   displayBME = true;
   displaySI = false;
 
@@ -45,19 +49,12 @@ void setup() {
   pinMode(BUTTON_A, INPUT_PULLUP);
   pinMode(BUTTON_B, INPUT_PULLUP);
   pinMode(BUTTON_C, INPUT_PULLUP);
-  
+
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
 
-  // Checks that every sensor and SD is working
-  if (! bme.begin()) {
-    Serial.println("Could not find a valid BME280 sensor");
-    while(1);
-  } else if (! uv.begin()) {
-    Serial.println("Could not find a valid SI1145 sensor");
-    while(1);
-  }
+  void checkSensors();
 
   // SD setup
   Serial.print("Initializing SD card... ");
@@ -67,11 +64,10 @@ void setup() {
     while (1);
   }
   Serial.println("card initialized.");
-
   File dataFile;
   dataFile = SD.open("data.csv", FILE_WRITE);
   if(dataFile) {
-    dataFile.println("Date, Time, Temp, Pressure, Humidity, Visible, IR, UV");
+    dataFile.println("DateTime, Temp, Pressure, Humidity, Visible, IR, UV");
     dataFile.close();
     Serial.println("Wrote on SD card");
   } else {
@@ -102,14 +98,64 @@ void loop() {
   if(!dataFile) {
     Serial.println("Could not open file");
   }
-  dataFile.print("Fecha, Hora, ");
+  saveDateTime(dataFile);
   readPressure(dataFile, displayBME);
   readUV(dataFile, displaySI);
   dataFile.close();
-  delay(100);
+  delay(200);
   yield();
   display.display();
   display.setCursor(0,0);
+}
+
+/*
+ * Checks that every sensor, RTC and SD is working
+ */
+void checkSensors() {
+  Serial.println("Checking sensors...");
+  if (! rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+    // while (1);
+  } else if (! bme.begin()) {
+    Serial.println("Could not find a valid BME280 sensor");
+    // while(1);
+  } else if (! uv.begin()) {
+    Serial.println("Could not find a valid SI1145 sensor");
+    // while(1);
+  }
+}
+
+/*
+ * Saves date and time on dataFile
+ * @param dataFile      file on which to write
+ */
+void saveDateTime(File dataFile) {
+  DateTime now = rtc.now();
+  dataFile.print(now.year(), DEC);
+  dataFile.print('-');
+  Serial.print(now.year(), DEC);
+  Serial.print('-');
+  dataFile.print(now.month(), DEC);
+  dataFile.print('-');
+  Serial.print(now.month(), DEC);
+  Serial.print('-');
+  dataFile.print(now.day(), DEC);
+  dataFile.print('T');
+  Serial.print(now.day(), DEC);
+  Serial.print('T');
+
+  dataFile.print(now.hour(), DEC);
+  dataFile.print(':');
+  Serial.print(now.hour(), DEC);
+  Serial.print(':');
+  dataFile.print(now.minute(), DEC);
+  dataFile.print(':');
+  Serial.print(now.minute(), DEC);
+  Serial.print(':');
+  dataFile.print(now.second(), DEC);
+  dataFile.print(",");
+  Serial.print(now.second(), DEC);
+  Serial.println();
 }
 
 /*
@@ -166,13 +212,13 @@ void readUV(File dataFile, bool enableDisplay) {
   Serial.print(visible);
   dataString += String(visible);
   dataString += ",";
-  
+
   Serial.print(" IR: ");
   float ir = uv.readIR();
   Serial.print(ir);
   dataString += String(ir);
   dataString += ",";
-  
+
   float UVindex = uv.readUV();
   // the index is multiplied by 100
   UVindex /= 100.0;  
@@ -180,7 +226,7 @@ void readUV(File dataFile, bool enableDisplay) {
   Serial.println(UVindex);
   dataString += String(UVindex);
   dataFile.println(dataString);
-  
+
   if(enableDisplay) {
     display.print("Vis.: ");
     display.print(visible);
