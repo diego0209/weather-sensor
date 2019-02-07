@@ -24,8 +24,8 @@ Adafruit_SI1145 uv = Adafruit_SI1145(); // SI1145 sensor
 
 Adafruit_BME280 bme; // BME280 sensor
 
-bool displayBME; // Determines display of BME on screen
-bool displaySI; // Determies display of SI on screen
+bool displayBME; // Determines whether to display the info of BME280 on screen
+bool displaySI; // Determines whether to display the info of SI1145 on screen
 
 /*
  * setup function
@@ -55,7 +55,7 @@ void setup() {
     Serial.println("Could not find a valid BME280 sensor");
     while(1);
   } else if (! uv.begin()) {
-    Serial.println("Didn't find SI1145");
+    Serial.println("Could not find a valid SI1145 sensor");
     while(1);
   }
 
@@ -69,6 +69,7 @@ void setup() {
   }
   Serial.println("card initialized.");
 
+  File dataFile;
   dataFile = SD.open("data.csv", FILE_WRITE);
   if(dataFile) {
     dataFile.println("Date, Time, Temp, Pressure, Humidity, Visible, IR, UV");
@@ -89,8 +90,8 @@ void loop() {
     displayBME = true; // Displays BME280
     displaySI = false;
   } else if(!digitalRead(BUTTON_B)) {
-    displayBME = false; // Displays SI1145
-    displaySI = true;
+    displayBME = false;
+    displaySI = true; // Displays SI1145
   } else if(!digitalRead(BUTTON_C)) {
     displayBME = false;
     displaySI = false;
@@ -102,7 +103,7 @@ void loop() {
   if(!dataFile) {
     Serial.println("Could not open file");
   }
-  dataFile.print("Fecha, ");
+  dataFile.print("Fecha, Hora, ");
   readPressure(dataFile, displayBME);
   readUV(dataFile, displaySI);
   dataFile.close();
@@ -144,12 +145,10 @@ void readPressure(File dataFile, bool enableDisplay) {
   if(enableDisplay) {
     display.print("Temp.: ");
     display.print(temp);
-    display.print(" C");
-    display.print("\n");
+    display.print(" C\n");
     display.print("Press.: ");
     display.print(pressure);
-    display.print(" hPa");
-    display.print("\n");
+    display.print(" hPa\n");
     display.print("Hum.: ");
     display.print(humidity);
     display.print(" %");
