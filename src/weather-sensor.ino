@@ -14,6 +14,7 @@
 #include <Adafruit_SSD1306.h>
 
 #define chipSelect 4
+#define VBATPIN A7
 
 RTC_DS3231 rtc;
 
@@ -54,7 +55,17 @@ void setup() {
   display.setTextColor(WHITE);
   display.setCursor(0,0);
 
-  void checkSensors();
+  // Checks that every sensor, the RTC and the SD card is working
+  if (! rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+    while (1);
+  } else if (! bme.begin()) {
+    Serial.println("Could not find a valid BME280 sensor");
+    while(1);
+  } else if (! uv.begin()) {
+    Serial.println("Could not find a valid SI1145 sensor");
+    while(1);
+  }
 
   // SD setup
   Serial.print("Initializing SD card... ");
@@ -98,64 +109,64 @@ void loop() {
   if(!dataFile) {
     Serial.println("Could not open file");
   }
-  saveDateTime(dataFile);
+  saveDateTime(dataFile, (displayBME || displaySI));
+  // checkBattery();
   readPressure(dataFile, displayBME);
   readUV(dataFile, displaySI);
   dataFile.close();
-  delay(200);
+  delay(100);
   yield();
   display.display();
   display.setCursor(0,0);
 }
 
 /*
- * Checks that every sensor, RTC and SD is working
+ * Saves date and time on dataFile
+ * @param dataFile      file on which to write
  */
-void checkSensors() {
-  Serial.println("Checking sensors...");
-  if (! rtc.begin()) {
-    Serial.println("Couldn't find RTC");
-    // while (1);
-  } else if (! bme.begin()) {
-    Serial.println("Could not find a valid BME280 sensor");
-    // while(1);
-  } else if (! uv.begin()) {
-    Serial.println("Could not find a valid SI1145 sensor");
-    // while(1);
+void saveDateTime(File dataFile, bool enableDisplay) {
+  DateTime now = rtc.now();
+  
+  dataFile.print(now.year(), DEC);
+  dataFile.print('-');
+  dataFile.print(now.month(), DEC);
+  dataFile.print('-');
+  dataFile.print(now.day(), DEC);
+  dataFile.print('T');
+
+  dataFile.print(now.hour(), DEC);
+  dataFile.print(':');
+  dataFile.print(now.minute(), DEC);
+  dataFile.print(':');
+  dataFile.print(now.second(), DEC);
+  dataFile.print(",");
+
+  if(enableDisplay) {
+    display.print(now.day(), DEC);
+    display.print('/');
+    display.print(now.month(), DEC);
+    display.print('/');
+    display.print(now.year(), DEC);
+    display.print(' ');
+    
+    display.print(now.hour(), DEC);
+    display.print(':');
+    display.print(now.minute(), DEC);
+    display.print(':');
+    display.print(now.second(), DEC);
+    display.println(' ');
   }
 }
 
 /*
- * Saves date and time on dataFile
- * @param dataFile      file on which to write
+ * Checks battery voltage
  */
-void saveDateTime(File dataFile) {
-  DateTime now = rtc.now();
-  dataFile.print(now.year(), DEC);
-  dataFile.print('-');
-  Serial.print(now.year(), DEC);
-  Serial.print('-');
-  dataFile.print(now.month(), DEC);
-  dataFile.print('-');
-  Serial.print(now.month(), DEC);
-  Serial.print('-');
-  dataFile.print(now.day(), DEC);
-  dataFile.print('T');
-  Serial.print(now.day(), DEC);
-  Serial.print('T');
-
-  dataFile.print(now.hour(), DEC);
-  dataFile.print(':');
-  Serial.print(now.hour(), DEC);
-  Serial.print(':');
-  dataFile.print(now.minute(), DEC);
-  dataFile.print(':');
-  Serial.print(now.minute(), DEC);
-  Serial.print(':');
-  dataFile.print(now.second(), DEC);
-  dataFile.print(",");
-  Serial.print(now.second(), DEC);
-  Serial.println();
+void checkBattery() {
+  float measuredvbat = analogRead(VBATPIN);
+  measuredvbat *= 2;    // we divided by 2, so multiply back
+  measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
+  measuredvbat /= 1024; // convert to voltage
+  display.println(measuredvbat);
 }
 
 /*
