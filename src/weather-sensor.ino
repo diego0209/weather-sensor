@@ -1,3 +1,5 @@
+// Adafruit Feather M0 Adalogger
+
 #include <Wire.h>
 #include <SPI.h>
 #include <Time.h>
@@ -15,7 +17,7 @@
 #define chipSelect 4
 #define VBATPIN A7
 
-RTC_DS3231 rtc;
+RTC_DS3231 rtc; // RTC module
 
 Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire);
 
