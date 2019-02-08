@@ -2,7 +2,6 @@
 #include <SPI.h>
 #include <Time.h>
 #include <SD.h>
-#include <Wire.h>
 #include "RTClib.h"
 // SI1145
 #include "Adafruit_SI1145.h"
