@@ -54,22 +54,22 @@ void setup() {
   display.setTextColor(WHITE);
   display.setCursor(0,0);
 
-  // Checks that every sensor, the RTC and the SD card is working
-  if (! rtc.begin()) {
+  // Checks that every sensor and the RTC is working
+  if (! bme.begin()) {
     display.clearDisplay();
-    display.println("Could not find RTC");
-    display.display();
-    while (1);
-  } else if (! bme.begin()) {
-    display.clearDisplay();
-    display.println("Could not find a valid BME280 sensor");
+    display.println("No valid BME280 found");
     display.display();
     while(1);
   } else if (! uv.begin()) {
     display.clearDisplay();
-    display.println("Could not find a valid SI1145 sensor");
+    display.println("No valid SI1145 found");
     display.display();
     while(1);
+  } else if (! rtc.begin()) {
+    display.clearDisplay();
+    display.println("No RTC found");
+    display.display();
+    while (1);
   }
 
   // SD setup
@@ -80,14 +80,16 @@ void setup() {
     display.display();
     while (1);
   }
+  display.setCursor(0,0);
   // File dataFile;
   // dataFile = SD.open("data.csv", FILE_WRITE);
   // if(dataFile) {
   //   dataFile.println("DateTime,Temp,Pressure,Humidity,Visible,IR,UV");
   //  dataFile.close();
-  //  Serial.println("Wrote on SD card");
   //} else {
+  //  display.clearDisplay();
   //  Serial.println("Could not open file");
+  //  display.display();
   //}
   
   digitalWrite(BUILTIN_LED, LOW);
@@ -112,18 +114,16 @@ void loop() {
   File dataFile; // Pointer to file in SD card
   dataFile = SD.open("data.csv", FILE_WRITE);
   if(!dataFile) {
-    display.clearDisplay();
     display.println("Could not open file");
-    display.display();
   }
   saveDateTime(dataFile, (displayBME || displaySI));
   readPressure(dataFile, displayBME);
   readUV(dataFile, displaySI);
   dataFile.close();
-  delay(100);
-  yield();
   display.display();
   display.setCursor(0,0);
+  delay(100);
+  yield();
 }
 
 /*
