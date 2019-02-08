@@ -15,7 +15,6 @@
 #include <Adafruit_SSD1306.h>
 
 #define chipSelect 4
-#define VBATPIN A7
 
 RTC_DS3231 rtc; // RTC module
 
@@ -76,15 +75,15 @@ void setup() {
     while (1);
   }
   Serial.println("card initialized.");
-  File dataFile;
-  dataFile = SD.open("data.csv", FILE_WRITE);
-  if(dataFile) {
-    dataFile.println("DateTime,Temp,Pressure,Humidity,Visible,IR,UV");
-    dataFile.close();
-    Serial.println("Wrote on SD card");
-  } else {
-    Serial.println("Could not open file");
-  }
+  // File dataFile;
+  // dataFile = SD.open("data.csv", FILE_WRITE);
+  // if(dataFile) {
+  //   dataFile.println("DateTime,Temp,Pressure,Humidity,Visible,IR,UV");
+  //  dataFile.close();
+  //  Serial.println("Wrote on SD card");
+  //} else {
+  //  Serial.println("Could not open file");
+  //}
   
   digitalWrite(BUILTIN_LED, LOW);
 }
@@ -94,12 +93,15 @@ void setup() {
  */
 void loop() {
   if(!digitalRead(BUTTON_A)) {
+    Serial.println('A');
     displayBME = true; // Displays BME280
     displaySI = false;
   } else if(!digitalRead(BUTTON_B)) {
+    Serial.println('B');
     displayBME = false;
     displaySI = true; // Displays SI1145
   } else if(!digitalRead(BUTTON_C)) {
+    Serial.println('C');
     displayBME = false;
     displaySI = false;
   }
@@ -111,7 +113,6 @@ void loop() {
     Serial.println("Could not open file");
   }
   saveDateTime(dataFile, (displayBME || displaySI));
-  // checkBattery();
   readPressure(dataFile, displayBME);
   readUV(dataFile, displaySI);
   dataFile.close();
@@ -127,54 +128,21 @@ void loop() {
  */
 void saveDateTime(File dataFile, bool enableDisplay) {
   DateTime now = rtc.now();
-  
-  dataFile.print(now.year(), DEC);
-  dataFile.print('-');
-  dataFile.print(now.month(), DEC);
-  dataFile.print('-');
-  dataFile.print(now.day(), DEC);
-  dataFile.print('T');
 
-  dataFile.print(now.hour(), DEC);
-  dataFile.print(':');
-  dataFile.print(now.minute(), DEC);
-  dataFile.print(':');
-  dataFile.print(now.second(), DEC);
-  dataFile.print(',');
+  char buffer[12];
+  sprintf(buffer, "%04lu-%02lu-%02luT", now.year(), now.month(), now.day());
+  dataFile.print(buffer);
+
+  sprintf(buffer, "%02lu:%02lu:%02lu,", now.hour(), now.minute(), now.second());
+  dataFile.print(buffer);
 
   if(enableDisplay) {
-    // char buffer[12];
-    // sprintf(buffer, "02%lu/02%lu/04%lu ", now.day(), now.month(), now.year());
-    // display.print(buffer);
-    display.print(now.day(), DEC);
-    display.print('/');
-    display.print(now.month(), DEC);
-    display.print('/');
-    display.print(now.year(), DEC);
-    display.print(' ');
+    sprintf(buffer, "%02lu/%02lu/%04lu ", now.day(), now.month(), now.year());
+    display.print(buffer);
 
-    // sprintf(buffer, "02%lu:02%lu:02%lu", now.hour(), now.minute(), now.second());
-    // display.println(buffer);
-    display.print(now.hour(), DEC);
-    display.print(':');
-    display.print(now.minute(), DEC);
-    display.print(':');
-    display.print(now.second(), DEC);
-    display.println(' ');
+    sprintf(buffer, "%02lu:%02lu:%02lu", now.hour(), now.minute(), now.second());
+    display.println(buffer);
   }
-}
-
-/*
- * Checks battery voltage
- */
-void checkBattery() {
-  float measuredBatV = analogRead(VBATPIN);
-  measuredBatV *= 2;    // we divided by 2, so multiply back
-  measuredBatV *= 3.3;  // Multiply by 3.3V, our reference voltage
-  measuredBatV /= 1024; // convert to voltage
-  byte batPercentage;
-  batPercentage = measuredBatV*4.2/3.2;
-  display.println(batPercentage);
 }
 
 /*
