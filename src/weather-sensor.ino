@@ -78,7 +78,7 @@ void setup() {
   File dataFile;
   dataFile = SD.open("data.csv", FILE_WRITE);
   if(dataFile) {
-    dataFile.println("DateTime, Temp, Pressure, Humidity, Visible, IR, UV");
+    dataFile.println("DateTime,Temp,Pressure,Humidity,Visible,IR,UV");
     dataFile.close();
     Serial.println("Wrote on SD card");
   } else {
@@ -122,7 +122,7 @@ void loop() {
 
 /*
  * Saves date and time on dataFile
- * @param dataFile      file on which to write
+ * @param dataFile  file on which to write
  */
 void saveDateTime(File dataFile, bool enableDisplay) {
   DateTime now = rtc.now();
@@ -142,13 +142,18 @@ void saveDateTime(File dataFile, bool enableDisplay) {
   dataFile.print(",");
 
   if(enableDisplay) {
+    //char buffer[10];
+    // sprintf(buffer, "02%lu/02%lu/04%lu ", now.day(), now.month(), now.year());
+    // display.print(buffer);
     display.print(now.day(), DEC);
     display.print('/');
     display.print(now.month(), DEC);
     display.print('/');
     display.print(now.year(), DEC);
     display.print(' ');
-    
+
+    // sprintf(buffer, "02%lu:02%lu:02%lu", now.hour(), now.minute(), now.second());
+    // display.println(buffer);
     display.print(now.hour(), DEC);
     display.print(':');
     display.print(now.minute(), DEC);
@@ -181,21 +186,21 @@ void readPressure(File dataFile, bool enableDisplay) {
   Serial.print(temp);
   Serial.print(" °C ");
   dataString += String(temp);
-  dataString += ", ";
+  dataString += ",";
 
   float pressure = bme.readPressure() / 100.0F;
   Serial.print("Pressure = ");
   Serial.print(pressure);
   Serial.print(" hPa ");
   dataString += String(pressure);
-  dataString += ", ";
+  dataString += ",";
 
   float humidity = bme.readHumidity();
   Serial.print("Humidity = ");
   Serial.print(humidity);
   Serial.println(" %");
   dataString += String(humidity);
-  dataString += ", ";
+  dataString += ",";
   dataFile.print(dataString);
 
   if(enableDisplay) {
