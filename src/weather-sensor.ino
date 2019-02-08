@@ -143,7 +143,7 @@ void saveDateTime(File dataFile, bool enableDisplay) {
   dataFile.print(',');
 
   if(enableDisplay) {
-    //char buffer[12];
+    // char buffer[12];
     // sprintf(buffer, "02%lu/02%lu/04%lu ", now.day(), now.month(), now.year());
     // display.print(buffer);
     display.print(now.day(), DEC);
