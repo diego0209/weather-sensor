@@ -139,10 +139,10 @@ void saveDateTime(File dataFile, bool enableDisplay) {
   dataFile.print(now.minute(), DEC);
   dataFile.print(':');
   dataFile.print(now.second(), DEC);
-  dataFile.print(",");
+  dataFile.print(',');
 
   if(enableDisplay) {
-    //char buffer[10];
+    //char buffer[12];
     // sprintf(buffer, "02%lu/02%lu/04%lu ", now.day(), now.month(), now.year());
     // display.print(buffer);
     display.print(now.day(), DEC);
@@ -167,11 +167,13 @@ void saveDateTime(File dataFile, bool enableDisplay) {
  * Checks battery voltage
  */
 void checkBattery() {
-  float measuredvbat = analogRead(VBATPIN);
-  measuredvbat *= 2;    // we divided by 2, so multiply back
-  measuredvbat *= 3.3;  // Multiply by 3.3V, our reference voltage
-  measuredvbat /= 1024; // convert to voltage
-  display.println(measuredvbat);
+  float measuredBatV = analogRead(VBATPIN);
+  measuredBatV *= 2;    // we divided by 2, so multiply back
+  measuredBatV *= 3.3;  // Multiply by 3.3V, our reference voltage
+  measuredBatV /= 1024; // convert to voltage
+  byte batPercentage;
+  batPercentage = measuredBatV*4.2/3.2;
+  display.println(batPercentage);
 }
 
 /*
@@ -182,20 +184,23 @@ void checkBattery() {
 void readPressure(File dataFile, bool enableDisplay) {
   String dataString = "";
   Serial.print("Temperature = ");
-  float temp = bme.readTemperature();
+  float temp;
+  temp = bme.readTemperature();
   Serial.print(temp);
   Serial.print(" °C ");
   dataString += String(temp);
   dataString += ",";
 
-  float pressure = bme.readPressure() / 100.0F;
+  float pressure;
+  pressure = bme.readPressure() / 100.0F;
   Serial.print("Pressure = ");
   Serial.print(pressure);
   Serial.print(" hPa ");
   dataString += String(pressure);
   dataString += ",";
 
-  float humidity = bme.readHumidity();
+  float humidity;
+  humidity = bme.readHumidity();
   Serial.print("Humidity = ");
   Serial.print(humidity);
   Serial.println(" %");
@@ -224,18 +229,21 @@ void readPressure(File dataFile, bool enableDisplay) {
 void readUV(File dataFile, bool enableDisplay) {
   String dataString = "";
   Serial.print("Vis: ");
-  float visible = uv.readVisible();
+  float visible;
+  visible = uv.readVisible();
   Serial.print(visible);
   dataString += String(visible);
   dataString += ",";
 
   Serial.print(" IR: ");
-  float ir = uv.readIR();
+  float ir;
+  ir = uv.readIR();
   Serial.print(ir);
   dataString += String(ir);
   dataString += ",";
 
-  float UVindex = uv.readUV();
+  float UVindex;
+  UVindex = uv.readUV();
   // the index is multiplied by 100
   UVindex /= 100.0;  
   Serial.print(" UV: ");
