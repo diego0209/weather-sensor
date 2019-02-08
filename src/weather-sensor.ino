@@ -38,14 +38,13 @@ bool displaySI; // Determines whether to display the info of SI1145 on screen
 void setup() {
   Serial.begin(9600);
   digitalWrite(BUILTIN_LED, HIGH);
-  Serial.println("On setup... ");
 
   displayBME = true;
   displaySI = false;
 
   // Screen setup
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
-  display.display();
+  // display.display();
 
   pinMode(BUTTON_A, INPUT_PULLUP);
   pinMode(BUTTON_B, INPUT_PULLUP);
@@ -57,24 +56,30 @@ void setup() {
 
   // Checks that every sensor, the RTC and the SD card is working
   if (! rtc.begin()) {
-    Serial.println("Couldn't find RTC");
+    display.clearDisplay();
+    display.println("Could not find RTC");
+    display.display();
     while (1);
   } else if (! bme.begin()) {
-    Serial.println("Could not find a valid BME280 sensor");
+    display.clearDisplay();
+    display.println("Could not find a valid BME280 sensor");
+    display.display();
     while(1);
   } else if (! uv.begin()) {
-    Serial.println("Could not find a valid SI1145 sensor");
+    display.clearDisplay();
+    display.println("Could not find a valid SI1145 sensor");
+    display.display();
     while(1);
   }
 
   // SD setup
-  Serial.print("Initializing SD card... ");
   // Checks if the card is present and can be initialized:
   if (!SD.begin(chipSelect)) {
-    Serial.println("card failed, or not present");
+    display.clearDisplay();
+    display.println("Card failed, or not present");
+    display.display();
     while (1);
   }
-  Serial.println("card initialized.");
   // File dataFile;
   // dataFile = SD.open("data.csv", FILE_WRITE);
   // if(dataFile) {
@@ -93,15 +98,12 @@ void setup() {
  */
 void loop() {
   if(!digitalRead(BUTTON_A)) {
-    Serial.println('A');
     displayBME = true; // Displays BME280
     displaySI = false;
   } else if(!digitalRead(BUTTON_B)) {
-    Serial.println('B');
     displayBME = false;
     displaySI = true; // Displays SI1145
   } else if(!digitalRead(BUTTON_C)) {
-    Serial.println('C');
     displayBME = false;
     displaySI = false;
   }
@@ -110,7 +112,9 @@ void loop() {
   File dataFile; // Pointer to file in SD card
   dataFile = SD.open("data.csv", FILE_WRITE);
   if(!dataFile) {
-    Serial.println("Could not open file");
+    display.clearDisplay();
+    display.println("Could not open file");
+    display.display();
   }
   saveDateTime(dataFile, (displayBME || displaySI));
   readPressure(dataFile, displayBME);
@@ -128,7 +132,6 @@ void loop() {
  */
 void saveDateTime(File dataFile, bool enableDisplay) {
   DateTime now = rtc.now();
-
   char buffer[12];
   sprintf(buffer, "%04lu-%02lu-%02luT", now.year(), now.month(), now.day());
   dataFile.print(buffer);
