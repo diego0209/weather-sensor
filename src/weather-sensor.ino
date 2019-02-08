@@ -44,7 +44,7 @@ void setup() {
 
   // Screen setup
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
-  // display.display();
+  display.display();
 
   pinMode(BUTTON_A, INPUT_PULLUP);
   pinMode(BUTTON_B, INPUT_PULLUP);
