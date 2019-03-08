@@ -5,82 +5,37 @@
 #include <Time.h>
 #include <SD.h>
 #include "RTClib.h"
-// SI1145
 #include "Adafruit_SI1145.h"
-// BME280
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
-// SSD1306
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
 #define chipSelect 4
-
-RTC_DS3231 rtc; // RTC module
-
-Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire);
-
 #define BUTTON_A 9
 #define BUTTON_B 6
 #define BUTTON_C 5
-#define BUILTIN_LED 13
 
-Adafruit_SI1145 uv = Adafruit_SI1145(); // SI1145 sensor
+RTC_DS3231 rtc;                                              // RTC module
+Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire); // Display
+Adafruit_SI1145 uv = Adafruit_SI1145();                      // SI1145 sensor
+Adafruit_BME280 bme;                                         // BME280 sensor
+bool displayBME;                                             // Determines whether to display the info of BME280 on screen
+bool displaySI;                                              // Determines whether to display the info of SI1145 on screen
 
-Adafruit_BME280 bme; // BME280 sensor
-
-bool displayBME; // Determines whether to display the info of BME280 on screen
-bool displaySI; // Determines whether to display the info of SI1145 on screen
-
-/*
+/**
  * setup function
  */
 void setup() {
   Serial.begin(9600);
-  digitalWrite(BUILTIN_LED, HIGH);
+  digitalWrite(LED_BUILTIN, HIGH);
 
   displayBME = true;
   displaySI = false;
 
-  // Screen setup
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
-  display.display();
+  screenSetup();
+  checkSensors();
 
-  pinMode(BUTTON_A, INPUT_PULLUP);
-  pinMode(BUTTON_B, INPUT_PULLUP);
-  pinMode(BUTTON_C, INPUT_PULLUP);
-
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0,0);
-
-  // Checks that every sensor and the RTC is working
-  if (! bme.begin()) {
-    display.clearDisplay();
-    display.println("No valid BME280 found");
-    display.display();
-    while(1);
-  } else if (! uv.begin()) {
-    display.clearDisplay();
-    display.println("No valid SI1145 found");
-    display.display();
-    while(1);
-  } else if (! rtc.begin()) {
-    display.clearDisplay();
-    display.println("No RTC found");
-    display.display();
-    while (1);
-  }
-
-  // SD setup
-  // Checks if the card is present and can be initialized:
-  if (!SD.begin(chipSelect)) {
-    display.clearDisplay();
-    display.println("Card failed, or not present");
-    display.display();
-    while (1);
-  }
-  display.setCursor(0,0);
   // File dataFile;
   // dataFile = SD.open("data.csv", FILE_WRITE);
   // if(dataFile) {
@@ -91,29 +46,31 @@ void setup() {
   //  Serial.println("Could not open file");
   //  display.display();
   //}
-  
-  digitalWrite(BUILTIN_LED, LOW);
+
+  digitalWrite(LED_BUILTIN, LOW);
 }
 
-/*
+/**
  * loop function
  */
 void loop() {
-  if(!digitalRead(BUTTON_A)) {
-    displayBME = true; // Displays BME280
+  if (!digitalRead(BUTTON_A)) {
+    displayBME = true;
     displaySI = false;
-  } else if(!digitalRead(BUTTON_B)) {
+  }
+  else if (!digitalRead(BUTTON_B)) {
     displayBME = false;
-    displaySI = true; // Displays SI1145
-  } else if(!digitalRead(BUTTON_C)) {
+    displaySI = true;
+  }
+  else if (!digitalRead(BUTTON_C)) {
     displayBME = false;
     displaySI = false;
   }
-  
+
   display.clearDisplay();
   File dataFile; // Pointer to file in SD card
   dataFile = SD.open("data.csv", FILE_WRITE);
-  if(!dataFile) {
+  if (! dataFile) {
     display.println("Could not open file");
   }
   saveDateTime(dataFile, (displayBME || displaySI));
@@ -121,12 +78,55 @@ void loop() {
   readUV(dataFile, displaySI);
   dataFile.close();
   display.display();
-  display.setCursor(0,0);
+  display.setCursor(0, 0);
   delay(100);
   yield();
 }
 
-/*
+/**
+ * Setups display
+ */
+void screenSetup() {
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
+  display.display();
+  pinMode(BUTTON_A, INPUT_PULLUP);
+  pinMode(BUTTON_B, INPUT_PULLUP);
+  pinMode(BUTTON_C, INPUT_PULLUP);
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+}
+
+/**
+ * Checks that every sensor, the RTC and the SD card is working
+ */
+void checkSensors() {
+  byte errors = 0;
+  display.clearDisplay();
+  if (!bme.begin()) {
+    display.println("No valid BME280 found");
+    errors += 1;
+  }
+  if (!uv.begin()) {
+    display.println("No valid SI1145 found");
+    errors += 1;
+  }
+  if (!rtc.begin()) {
+    display.println("No RTC found");
+    errors += 1;
+  }
+  if (!SD.begin(chipSelect)) {
+    display.println("Card failed, or not present");
+    errors += 1;
+  }
+  if (errors > 0) {
+    display.display();
+    while (1);
+  }
+  display.setCursor(0, 0);
+}
+
+/**
  * Saves date and time on dataFile
  * @param dataFile  file on which to write
  */
@@ -139,7 +139,7 @@ void saveDateTime(File dataFile, bool enableDisplay) {
   sprintf(buffer, "%02lu:%02lu:%02lu,", now.hour(), now.minute(), now.second());
   dataFile.print(buffer);
 
-  if(enableDisplay) {
+  if (enableDisplay) {
     sprintf(buffer, "%02lu/%02lu/%04lu ", now.day(), now.month(), now.year());
     display.print(buffer);
 
@@ -148,7 +148,7 @@ void saveDateTime(File dataFile, bool enableDisplay) {
   }
 }
 
-/*
+/**
  * Gets a value of temperature, pressure and humidity
  * @param dataFile      file on which to write
  * @param enableDisplay to display info on screen
@@ -180,7 +180,7 @@ void readPressure(File dataFile, bool enableDisplay) {
   dataString += ",";
   dataFile.print(dataString);
 
-  if(enableDisplay) {
+  if (enableDisplay) {
     display.print("Temp.: ");
     display.print(temp);
     display.print(" C\n");
@@ -193,7 +193,7 @@ void readPressure(File dataFile, bool enableDisplay) {
   }
 }
 
-/*
+/**
  * Gets a value of visible light, infrared and uv light
  * @param dataFile      file on which to write
  * @param enableDisplay to display info on screen
@@ -217,13 +217,13 @@ void readUV(File dataFile, bool enableDisplay) {
   float UVindex;
   UVindex = uv.readUV();
   // the index is multiplied by 100
-  UVindex /= 100.0;  
+  UVindex /= 100.0;
   Serial.print(" UV: ");
   Serial.println(UVindex);
   dataString += String(UVindex);
   dataFile.println(dataString);
 
-  if(enableDisplay) {
+  if (enableDisplay) {
     display.print("Vis.: ");
     display.print(visible);
     display.print("\n");
@@ -234,3 +234,4 @@ void readUV(File dataFile, bool enableDisplay) {
     display.print(UVindex);
   }
 }
+
