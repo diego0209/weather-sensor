@@ -134,6 +134,7 @@ void checkSensors() {
 /**
  * Saves date and time on dataFile
  * @param dataFile  file on which to write
+ * @param enableDisplay to display info on screen
  */
 void saveDateTime(File dataFile, bool enableDisplay) {
   DateTime now = rtc.now();
