@@ -22,6 +22,8 @@ Adafruit_SI1145 uv = Adafruit_SI1145();                      // SI1145 sensor
 Adafruit_BME280 bme;                                         // BME280 sensor
 bool displayBME;                                             // Determines whether to display the info of BME280 on screen
 bool displaySI;                                              // Determines whether to display the info of SI1145 on screen
+const int displayDelay = 1000;                               // Delay for screen refresh
+unsigned long displayTimer;                                  // Time counter (milliseconds)
 
 /**
  * setup function
@@ -47,6 +49,7 @@ void setup() {
   //  display.display();
   //}
 
+  displayTimer = millis();
   digitalWrite(LED_BUILTIN, LOW);
 }
 
@@ -67,20 +70,22 @@ void loop() {
     displaySI = false;
   }
 
-  display.clearDisplay();
-  File dataFile; // Pointer to file in SD card
-  dataFile = SD.open("data.csv", FILE_WRITE);
-  if (! dataFile) {
-    display.println("Could not open file");
+  if (millis() - displayTimer >= displayDelay) {
+    displayTimer = millis();
+    display.clearDisplay();
+    File dataFile; // Pointer to file in SD card
+    dataFile = SD.open("data.csv", FILE_WRITE);
+    if (! dataFile) {
+      display.println("Could not open file");
+    }
+    saveDateTime(dataFile, (displayBME || displaySI));
+    readPressure(dataFile, displayBME);
+    readUV(dataFile, displaySI);
+    dataFile.close();
+    display.display();
+    display.setCursor(0, 0);
+    yield();
   }
-  saveDateTime(dataFile, (displayBME || displaySI));
-  readPressure(dataFile, displayBME);
-  readUV(dataFile, displaySI);
-  dataFile.close();
-  display.display();
-  display.setCursor(0, 0);
-  delay(100);
-  yield();
 }
 
 /**
@@ -234,4 +239,3 @@ void readUV(File dataFile, bool enableDisplay) {
     display.print(UVindex);
   }
 }
-
