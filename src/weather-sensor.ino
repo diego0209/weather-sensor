@@ -161,9 +161,9 @@ void saveDateTime(File dataFile, bool enableDisplay) {
  */
 void readPressure(File dataFile, bool enableDisplay) {
   String dataString = "";
-  Serial.print("Temperature = ");
   float temp;
   temp = bme.readTemperature();
+  Serial.print("Temperature = ");
   Serial.print(temp);
   Serial.print(" °C ");
   dataString += String(temp);
@@ -189,10 +189,10 @@ void readPressure(File dataFile, bool enableDisplay) {
   if (enableDisplay) {
     display.print("Temp.: ");
     display.print(temp);
-    display.print(" C\n");
+    display.println(" C");
     display.print("Press.: ");
     display.print(pressure);
-    display.print(" hPa\n");
+    display.println(" hPa");
     display.print("Hum.: ");
     display.print(humidity);
     display.print(" %");
@@ -208,24 +208,23 @@ void readPressure(File dataFile, bool enableDisplay) {
  */
 void readUV(File dataFile, bool enableDisplay) {
   String dataString = "";
-  Serial.print("Vis: ");
   float visible;
   visible = uv.readVisible();
+  Serial.print("Vis: ");
   Serial.print(visible);
   dataString += String(visible);
   dataString += ",";
 
-  Serial.print(" IR: ");
   float ir;
   ir = uv.readIR();
+  Serial.print(" IR: ");
   Serial.print(ir);
   dataString += String(ir);
   dataString += ",";
 
   float UVindex;
   UVindex = uv.readUV();
-  // the index is multiplied by 100
-  UVindex /= 100.0;
+  UVindex /= 100.0; // the index is multiplied by 100
   Serial.print(" UV: ");
   Serial.println(UVindex);
   dataString += String(UVindex);
@@ -233,11 +232,9 @@ void readUV(File dataFile, bool enableDisplay) {
 
   if (enableDisplay) {
     display.print("Vis.: ");
-    display.print(visible);
-    display.print("\n");
+    display.println(visible);
     display.print("IR: ");
-    display.print(ir);
-    display.print("\n");
+    display.println(ir);
     display.print("UV: ");
     display.print(UVindex);
     display.display();
