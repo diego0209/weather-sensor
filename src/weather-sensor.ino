@@ -49,7 +49,7 @@ void setup() {
   //  display.display();
   //}
 
-  displayTimer = millis();
+  displayTimer = 0;
   digitalWrite(LED_BUILTIN, LOW);
 }
 
