@@ -72,18 +72,19 @@ void loop() {
 
   if (millis() - displayTimer >= displayDelay) {
     displayTimer = millis();
-    display.clearDisplay();
     File dataFile; // Pointer to file in SD card
     dataFile = SD.open("data.csv", FILE_WRITE);
     if (! dataFile) {
+      display.clearDisplay();
       display.println("Could not open file");
+      display.display();
+      display.setCursor(0, 0);
+      delay(1000);
     }
     saveDateTime(dataFile, (displayBME || displaySI));
     readPressure(dataFile, displayBME);
     readUV(dataFile, displaySI);
     dataFile.close();
-    display.display();
-    display.setCursor(0, 0);
     yield();
   }
 }
@@ -108,20 +109,20 @@ void screenSetup() {
 void checkSensors() {
   byte errors = 0;
   display.clearDisplay();
-  if (!bme.begin()) {
+  if (! bme.begin()) {
     display.println("No valid BME280 found");
     errors += 1;
   }
-  if (!uv.begin()) {
+  if (! uv.begin()) {
     display.println("No valid SI1145 found");
     errors += 1;
   }
-  if (!rtc.begin()) {
+  if (! rtc.begin()) {
     display.println("No RTC found");
     errors += 1;
   }
-  if (!SD.begin(chipSelect)) {
-    display.println("Card failed, or not present");
+  if (! SD.begin(chipSelect)) {
+    display.println("Card failed or not present");
     errors += 1;
   }
   if (errors > 0) {
@@ -141,14 +142,13 @@ void saveDateTime(File dataFile, bool enableDisplay) {
   char buffer[12];
   sprintf(buffer, "%04lu-%02lu-%02luT", now.year(), now.month(), now.day());
   dataFile.print(buffer);
-
   sprintf(buffer, "%02lu:%02lu:%02lu,", now.hour(), now.minute(), now.second());
   dataFile.print(buffer);
 
   if (enableDisplay) {
+    display.clearDisplay();
     sprintf(buffer, "%02lu/%02lu/%04lu ", now.day(), now.month(), now.year());
     display.print(buffer);
-
     sprintf(buffer, "%02lu:%02lu:%02lu", now.hour(), now.minute(), now.second());
     display.println(buffer);
   }
@@ -196,6 +196,8 @@ void readPressure(File dataFile, bool enableDisplay) {
     display.print("Hum.: ");
     display.print(humidity);
     display.print(" %");
+    display.display();
+    display.setCursor(0, 0);
   }
 }
 
@@ -238,5 +240,7 @@ void readUV(File dataFile, bool enableDisplay) {
     display.print("\n");
     display.print("UV: ");
     display.print(UVindex);
+    display.display();
+    display.setCursor(0, 0);
   }
 }
