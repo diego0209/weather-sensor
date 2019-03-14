@@ -16,7 +16,7 @@
 #define BUTTON_B 6
 #define BUTTON_C 5
 
-RTC_DS3231 rtc;                                              // RTC module RTC module DS3231
+RTC_DS3231 rtc;                                              // RTC module DS3231
 Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire); // Display
 Adafruit_SI1145 uv = Adafruit_SI1145();                      // SI1145 sensor
 Adafruit_BME280 bme;                                         // BME280 sensor
