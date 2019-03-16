@@ -4,8 +4,8 @@
 #include <SPI.h>
 #include <Time.h>
 #include <SD.h>
-#include "RTClib.h"
-#include "Adafruit_SI1145.h"
+#include <RTClib.h>
+#include <Adafruit_SI1145.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_GFX.h>
@@ -17,11 +17,11 @@
 #define BUTTON_C 5
 
 RTC_DS3231 rtc;                                              // RTC module DS3231
-Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire); // Display
+Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire); // Display SSD1306
 Adafruit_SI1145 uv = Adafruit_SI1145();                      // SI1145 sensor
 Adafruit_BME280 bme;                                         // BME280 sensor
-bool displayBME;                                             // Determines whether to display the info of BME280 on screen
-bool displaySI;                                              // Determines whether to display the info of SI1145 on screen
+bool displayBME;                                             // Determines whether to display the info of BME280 on screen or not
+bool displaySI;                                              // Determines whether to display the info of SI1145 on screen or not
 const int displayDelay = 1000;                               // Delay for screen refresh
 unsigned long displayTimer;                                  // Time counter (milliseconds)
 
@@ -37,17 +37,6 @@ void setup() {
 
   screenSetup();
   checkSensors();
-
-  // File dataFile;
-  // dataFile = SD.open("data.csv", FILE_WRITE);
-  // if(dataFile) {
-  //   dataFile.println("DateTime,Temp,Pressure,Humidity,Visible,IR,UV");
-  //  dataFile.close();
-  //} else {
-  //  display.clearDisplay();
-  //  Serial.println("Could not open file");
-  //  display.display();
-  //}
 
   displayTimer = 0;
   digitalWrite(LED_BUILTIN, LOW);
@@ -68,6 +57,7 @@ void loop() {
   else if (!digitalRead(BUTTON_C)) {
     displayBME = false;
     displaySI = false;
+    clearScreen();
   }
 
   if (millis() - displayTimer >= displayDelay) {
@@ -79,7 +69,7 @@ void loop() {
       display.println("Could not open file");
       display.display();
       display.setCursor(0, 0);
-      delay(1000);
+      delay(500);
     }
     saveDateTime(dataFile, (displayBME || displaySI));
     readPressure(dataFile, displayBME);
@@ -118,7 +108,7 @@ void checkSensors() {
     errors += 1;
   }
   if (! rtc.begin()) {
-    display.println("No RTC found");
+    display.println("No RTC module found");
     errors += 1;
   }
   if (! SD.begin(chipSelect)) {
@@ -129,6 +119,33 @@ void checkSensors() {
     display.display();
     while (1);
   }
+  display.setCursor(0, 0);
+}
+
+/**
+ * Writes column headers on data file
+ */
+void writeHeadersOnFile() {
+  File dataFile;
+  dataFile = SD.open("data.csv", FILE_WRITE);
+  if(dataFile) {
+    dataFile.println("DateTime,Temp,Pressure,Humidity,Visible,IR,UV");
+    dataFile.close();
+  } else {
+    display.clearDisplay();
+    Serial.println("Could not open file");
+    dataFile.println("Could not open file");
+    display.display();
+    while(1);
+  }
+}
+
+/**
+ * Clears screen
+ */
+void clearScreen() {
+  display.clearDisplay();
+  display.display();
   display.setCursor(0, 0);
 }
 
