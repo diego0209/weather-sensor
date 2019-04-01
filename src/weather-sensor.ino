@@ -157,10 +157,10 @@ void clearScreen() {
  */
 void saveDateTime(File dataFile, bool enableDisplay) {
   DateTime now = rtc.now();
-  char buffer[12];
-  sprintf(buffer, "%04lu-%02lu-%02luT", now.year(), now.month(), now.day());
+  char buffer[13];
+  sprintf(buffer, "\"%04lu-%02lu-%02luT", now.year(), now.month(), now.day());
   dataFile.print(buffer);
-  sprintf(buffer, "%02lu:%02lu:%02lu,", now.hour(), now.minute(), now.second());
+  sprintf(buffer, "%02lu:%02lu:%02lu\",", now.hour(), now.minute(), now.second());
   dataFile.print(buffer);
 
   if (enableDisplay) {
