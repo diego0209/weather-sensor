@@ -37,6 +37,7 @@ void setup() {
 
   screenSetup();
   checkSensors();
+  writeHeadersOnFile();
 
   displayTimer = 0;
   digitalWrite(LED_BUILTIN, LOW);
@@ -129,7 +130,7 @@ void writeHeadersOnFile() {
   File dataFile;
   dataFile = SD.open("data.csv", FILE_WRITE);
   if(dataFile) {
-    dataFile.println("DateTime,Temp,Pressure,Humidity,Visible,IR,UV");
+    dataFile.println("\"DateTime\",\"Temp\",\"Pressure\",\"Humidity\",\"Visible\",\"IR\",\"UV\"");
     dataFile.close();
   } else {
     display.clearDisplay();
