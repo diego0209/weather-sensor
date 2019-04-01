@@ -22,8 +22,9 @@ Adafruit_SI1145 uv = Adafruit_SI1145();                      // SI1145 sensor
 Adafruit_BME280 bme;                                         // BME280 sensor
 bool displayBME;                                             // Determines whether to display the info of BME280 on screen or not
 bool displaySI;                                              // Determines whether to display the info of SI1145 on screen or not
-const int displayDelay = 1000;                               // Delay for screen refresh
+const int DISPLAY_DELAY = 1000;                              // Delay for screen refresh
 unsigned long displayTimer;                                  // Time counter (milliseconds)
+const char FILE_NAME[] = "arduino";
 
 /**
  * setup function
@@ -61,10 +62,10 @@ void loop() {
     clearScreen();
   }
 
-  if (millis() - displayTimer >= displayDelay) {
+  if (millis() - displayTimer >= DISPLAY_DELAY) {
     displayTimer = millis();
     File dataFile; // Pointer to file in SD card
-    dataFile = SD.open("data.csv", FILE_WRITE);
+    dataFile = SD.open(FILE_NAME, FILE_WRITE);
     if (! dataFile) {
       display.clearDisplay();
       display.println("Could not open file");
@@ -128,7 +129,7 @@ void checkSensors() {
  */
 void writeHeadersOnFile() {
   File dataFile;
-  dataFile = SD.open("data.csv", FILE_WRITE);
+  dataFile = SD.open(FILE_NAME, FILE_WRITE);
   if(dataFile) {
     dataFile.println("\"DateTime\",\"Temp\",\"Pressure\",\"Humidity\",\"Visible\",\"IR\",\"UV\"");
     dataFile.close();
