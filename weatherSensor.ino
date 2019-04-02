@@ -16,6 +16,7 @@
 #define BUTTON_B 6
 #define BUTTON_C 5
 
+const char FILE_NAME[] = "drake2.csv";                       // File name in SD card
 RTC_DS3231 rtc;                                              // RTC module DS3231
 Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire); // Display SSD1306
 Adafruit_SI1145 uv = Adafruit_SI1145();                      // SI1145 sensor
@@ -24,7 +25,6 @@ bool displayBME;                                             // Determines wheth
 bool displaySI;                                              // Determines whether to display the info of SI1145 on screen or not
 const int DISPLAY_DELAY = 1000;                              // Delay for screen refresh
 unsigned long displayTimer;                                  // Time counter (milliseconds)
-const char FILE_NAME[] = "arduino";
 
 /**
  * setup function
@@ -38,7 +38,7 @@ void setup() {
 
   screenSetup();
   checkSensors();
-  writeHeadersOnFile();
+  // writeHeadersOnFile();
 
   displayTimer = 0;
   digitalWrite(LED_BUILTIN, LOW);
@@ -114,7 +114,7 @@ void checkSensors() {
     errors += 1;
   }
   if (! SD.begin(chipSelect)) {
-    display.println("Card failed or not present");
+    display.println("SD card failed");
     errors += 1;
   }
   if (errors > 0) {
@@ -208,7 +208,8 @@ void readPressure(File dataFile, bool enableDisplay) {
   if (enableDisplay) {
     display.print("Temp.: ");
     display.print(temp);
-    display.println(" C");
+    display.print((char)247);
+    display.println("C");
     display.print("Press.: ");
     display.print(pressure);
     display.println(" hPa");
