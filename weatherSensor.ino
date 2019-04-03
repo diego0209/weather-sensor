@@ -134,9 +134,9 @@ void checkSensors() {
  */
 void writeHeadersOnFile() {
   File dataFile;
-  dataFile = SD.open("headers.csv", FILE_WRITE);
+  dataFile = SD.open(FILE_NAME, FILE_WRITE);
   if(dataFile) {
-    dataFile.println("\"DateTime\",\"Temp\",\"Pressure\",\"Humidity\",\"Visible\",\"IR\",\"UV\"");
+    dataFile.println("\"DateTime\",\"Temperature\",\"Pressure\",\"Humidity\",\"Visible\",\"IR\",\"UV\"");
     dataFile.close();
   } else {
     display.clearDisplay();
@@ -278,4 +278,3 @@ void clearScreen() {
   display.display();
   display.setCursor(0, 0);
 }
-
