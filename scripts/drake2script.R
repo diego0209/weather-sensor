@@ -1,6 +1,7 @@
 # setwd("/path/to/directory/")
 setwd("~/Escritorio/")
-data <- read.csv("drake2limpio2.csv")
+file.name <- "drake2limpio.csv"
+data <- read.csv(file.name)
 data.mean <-
   aggregate(data[, 2:7], list(DateTime = data$DateTime), mean)
 data.mean[, 2:4] <- round(data.mean[, 2:4], 2)

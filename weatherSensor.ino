@@ -16,15 +16,15 @@
 #define BUTTON_B 6
 #define BUTTON_C 5
 
-const char FILE_NAME[] = "drake2.csv";                       // File name in SD card
-RTC_DS3231 rtc;                                              // RTC module DS3231
-Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire); // Display SSD1306
-Adafruit_SI1145 uv = Adafruit_SI1145();                      // SI1145 sensor
+Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire); // SSD1306 display
+Adafruit_SI1145 si = Adafruit_SI1145();                      // SI1145 sensor
 Adafruit_BME280 bme;                                         // BME280 sensor
-bool displayBME;                                             // Determines whether to display the info of BME280 on screen or not
-bool displaySI;                                              // Determines whether to display the info of SI1145 on screen or not
+RTC_DS3231 rtc;                                              // DS3231 RTC module
+bool displayBME = true;                                      // Determines whether to display the info of BME280 on screen or not
+bool displaySI = false;                                      // Determines whether to display the info of SI1145 on screen or not
+unsigned long displayTimer = 0;                              // Time counter (milliseconds)
+const char FILE_NAME[] = "drake2.csv";                       // File name in SD card
 const int DISPLAY_DELAY = 1000;                              // Delay for screen refresh
-unsigned long displayTimer;                                  // Time counter (milliseconds)
 
 /**
  * setup function
@@ -51,12 +51,10 @@ void loop() {
   if (!digitalRead(BUTTON_A)) {
     displayBME = true;
     displaySI = false;
-  }
-  else if (!digitalRead(BUTTON_B)) {
+  } else if (!digitalRead(BUTTON_B)) {
     displayBME = false;
     displaySI = true;
-  }
-  else if (!digitalRead(BUTTON_C)) {
+  } else if (!digitalRead(BUTTON_C)) {
     displayBME = false;
     displaySI = false;
     clearScreen();
@@ -74,8 +72,8 @@ void loop() {
       delay(500);
     }
     saveDateTime(dataFile, (displayBME || displaySI));
-    readPressure(dataFile, displayBME);
-    readUV(dataFile, displaySI);
+    writeBME280Data(dataFile, displayBME);
+    writeSI1145Data(dataFile, displaySI);
     dataFile.close();
     yield();
   }
@@ -105,7 +103,7 @@ void checkSensors() {
     display.println("No valid BME280 found");
     errors += 1;
   }
-  if (! uv.begin()) {
+  if (! si.begin()) {
     display.println("No valid SI1145 found");
     errors += 1;
   }
@@ -113,9 +111,15 @@ void checkSensors() {
     display.println("No RTC module found");
     errors += 1;
   }
-  if (! SD.begin(chipSelect)) {
+  if (!SD.begin(chipSelect)) {
     display.println("SD card failed");
     errors += 1;
+  } else {
+    dataFile = SD.open(FILE_NAME, FILE_WRITE);
+    if (!dataFile) {
+      dataFile.println("Could not open file");
+      errors += 1;
+    }
   }
   if (errors > 0) {
     display.display();
@@ -153,10 +157,10 @@ void clearScreen() {
 
 /**
  * Saves date and time on dataFile
- * @param dataFile  file on which to write
- * @param enableDisplay to display info on screen
+ * @param dataFile       file on which to write
+ * @param displayEnabled to display info on screen
  */
-void saveDateTime(File dataFile, bool enableDisplay) {
+void saveDateTime(File dataFile, bool displayEnabled) {
   DateTime now = rtc.now();
   char buffer[13];
   sprintf(buffer, "\"%04lu-%02lu-%02luT", now.year(), now.month(), now.day());
@@ -164,7 +168,7 @@ void saveDateTime(File dataFile, bool enableDisplay) {
   sprintf(buffer, "%02lu:%02lu:%02lu\",", now.hour(), now.minute(), now.second());
   dataFile.print(buffer);
 
-  if (enableDisplay) {
+  if (displayEnabled) {
     display.clearDisplay();
     sprintf(buffer, "%02lu/%02lu/%04lu ", now.day(), now.month(), now.year());
     display.print(buffer);
@@ -175,10 +179,10 @@ void saveDateTime(File dataFile, bool enableDisplay) {
 
 /**
  * Gets a value of temperature, pressure and humidity
- * @param dataFile      file on which to write
- * @param enableDisplay to display info on screen
+ * @param dataFile       file on which to write
+ * @param displayEnabled to display info on screen
  */
-void readPressure(File dataFile, bool enableDisplay) {
+void writeBME280Data(File dataFile, bool displayEnabled) {
   String dataString = "";
   float temp;
   temp = bme.readTemperature();
@@ -205,7 +209,7 @@ void readPressure(File dataFile, bool enableDisplay) {
   dataString += ",";
   dataFile.print(dataString);
 
-  if (enableDisplay) {
+  if (displayEnabled) {
     display.print("Temp.: ");
     display.print(temp);
     display.print((char)247);
@@ -223,34 +227,34 @@ void readPressure(File dataFile, bool enableDisplay) {
 
 /**
  * Gets a value of visible light, infrared and uv light
- * @param dataFile      file on which to write
- * @param enableDisplay to display info on screen
+ * @param dataFile       file on which to write
+ * @param displayEnabled to display info on screen
  */
-void readUV(File dataFile, bool enableDisplay) {
+void writeSI1145Data(File dataFile, bool displayEnabled) {
   String dataString = "";
   float visible;
-  visible = uv.readVisible();
+  visible = si.readVisible();
   Serial.print("Vis: ");
   Serial.print(visible);
   dataString += String(visible);
   dataString += ",";
 
   float ir;
-  ir = uv.readIR();
+  ir = si.readIR();
   Serial.print(" IR: ");
   Serial.print(ir);
   dataString += String(ir);
   dataString += ",";
 
   float UVindex;
-  UVindex = uv.readUV();
+  UVindex = si.readUV();
   UVindex /= 100.0; // the index is multiplied by 100
   Serial.print(" UV: ");
   Serial.println(UVindex);
   dataString += String(UVindex);
   dataFile.println(dataString);
 
-  if (enableDisplay) {
+  if (displayEnabled) {
     display.print("Vis.: ");
     display.println(visible);
     display.print("IR: ");
@@ -261,3 +265,4 @@ void readUV(File dataFile, bool enableDisplay) {
     display.setCursor(0, 0);
   }
 }
+
