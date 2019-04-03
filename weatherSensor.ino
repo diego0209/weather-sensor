@@ -178,8 +178,6 @@ void displayDateTime(DateTime now) {
   display.println(buffer);
 }
 
-void displayDateTime
-
 /**
  * Writes value of temperature, pressure and humidity on SD card
  * @param dataFile       file on which to write
