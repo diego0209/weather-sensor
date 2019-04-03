@@ -140,8 +140,7 @@ void writeHeadersOnFile() {
     dataFile.close();
   } else {
     display.clearDisplay();
-    Serial.println("Could not open file");
-    dataFile.println("Could not open file");
+    display.println("Could not open file");
     display.display();
     while(1);
   }
