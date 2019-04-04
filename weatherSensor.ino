@@ -71,7 +71,7 @@ void loop() {
       display.setCursor(0, 0);
       delay(500);
     }
-    saveDateTime(dataFile, (displayBME || displaySI));
+    writeDateTime(dataFile, (displayBME || displaySI));
     writeBME280Data(dataFile, displayBME);
     writeSI1145Data(dataFile, displaySI);
     dataFile.close();
@@ -277,3 +277,4 @@ void clearScreen() {
   display.display();
   display.setCursor(0, 0);
 }
+
