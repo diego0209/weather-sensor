@@ -1,6 +1,7 @@
 # setwd("/path/to/directory/")
 setwd("~/Escritorio/")
 file.name <- "drake2limpio.csv"
+
 data <- read.csv(file.name)
 data.mean <-
   aggregate(data[, 2:7], list(DateTime = data$DateTime), mean)

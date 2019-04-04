@@ -2,8 +2,8 @@
 
 #include <Wire.h>
 #include <SPI.h>
-#include <Time.h>
 #include <SD.h>
+#include <Time.h>
 #include <RTClib.h>
 #include <Adafruit_SI1145.h>
 #include <Adafruit_Sensor.h>
@@ -99,15 +99,15 @@ void screenSetup() {
 void checkSensors() {
   byte errors = 0;
   display.clearDisplay();
-  if (! bme280.begin()) {
+  if (!bme280.begin()) {
     display.println("No valid BME280 found");
     errors += 1;
   }
-  if (! si1145.begin()) {
+  if (!si1145.begin()) {
     display.println("No valid SI1145 found");
     errors += 1;
   }
-  if (! rtc.begin()) {
+  if (!rtc.begin()) {
     display.println("No RTC module found");
     errors += 1;
   }
@@ -147,11 +147,11 @@ void writeHeadersOnFile() {
 }
 
 /**
- * Saves date and time on dataFile
+ * Writes date and time on dataFile on SD card
  * @param dataFile       file on which to write
  * @param displayEnabled to display info on screen
  */
-void saveDateTime(File dataFile, bool displayEnabled) {
+void writeDateTime(File dataFile, bool displayEnabled) {
   DateTime now = rtc.now();
   char buffer[13];
   sprintf(buffer, "\"%04lu-%02lu-%02luT", now.year(), now.month(), now.day());
