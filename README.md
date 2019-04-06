@@ -9,10 +9,6 @@ Software for the programming of a mobile meteorological station using the follow
 * 4.7 volts battery
 * Micro SD card
 
-![Image of station](https://drive.google.com/file/d/1E2Zc7ndAardbxRQSzTWQEwhZh9Gt5_0j/view?usp=sharing)
-
 In addition, an R script was made for data processing and plotting.
-
-![Atmospheric pressure plot](https://drive.google.com/file/d/1r8RHoV7J7p_Pg_T7nRKo4727GcaQLy1e/view?usp=sharing)
 
 This work was done at the University of Costa Rica for the TCU-675.
