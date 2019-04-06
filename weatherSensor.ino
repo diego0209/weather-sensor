@@ -1,4 +1,19 @@
-// Adafruit Feather M0 Adalogger
+/**
+  weatherSensor
+
+  Collection of meteorological data by using an Adafruit Feather M0 Adalogger.
+
+  Components:
+  * Adafruit Feather M0 Adalogger
+  * SI1145 sensor
+  * BME280 sensor
+  * DS3231 RTC module
+  * 4.7 volts battery
+  * Micro SD card
+
+  @date 05/03/2019
+  @author Luis Diego Mora J.
+*/
 
 #include <Wire.h>
 #include <SPI.h>
@@ -38,7 +53,6 @@ void setup() {
 
   screenSetup();
   checkSensors();
-  // writeHeadersOnFile();
 
   displayTimer = 0;
   digitalWrite(LED_BUILTIN, LOW);
@@ -64,18 +78,18 @@ void loop() {
     displayTimer = millis();
     File dataFile; // Pointer to file in SD card
     dataFile = SD.open(FILE_NAME, FILE_WRITE);
-    if (! dataFile) {
+    if (!dataFile) {
       display.clearDisplay();
       display.println("Could not open file");
       display.display();
       display.setCursor(0, 0);
-      delay(500);
+    } else {
+      writeDateTime(dataFile, (displayBME || displaySI));
+      writeBME280Data(dataFile, displayBME);
+      writeSI1145Data(dataFile, displaySI);
+      dataFile.close();
+      yield();
     }
-    writeDateTime(dataFile, (displayBME || displaySI));
-    writeBME280Data(dataFile, displayBME);
-    writeSI1145Data(dataFile, displaySI);
-    dataFile.close();
-    yield();
   }
 }
 
@@ -277,4 +291,3 @@ void clearScreen() {
   display.display();
   display.setCursor(0, 0);
 }
-

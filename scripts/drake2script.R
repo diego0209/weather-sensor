@@ -1,14 +1,24 @@
 # setwd("/path/to/directory/")
-setwd("~/Escritorio/")
-file.name <- "drake2limpio.csv"
+setwd("~/tcu/")
 
-data <- read.csv(file.name)
-data.mean <-
-  aggregate(data[, 2:7], list(DateTime = data$DateTime), mean)
-data.mean[, 2:4] <- round(data.mean[, 2:4], 2)
-data.mean[, 5:6] <- round(data.mean[, 5:6], 0)
-data.mean[, 7] <- round(data.mean[, 7], 2)
-write.csv(data.mean, file = "drake2mean.csv", row.names = FALSE)
+AverageDataByDateTime <- function(input.file) {
+  data <- read.csv(input.file)
+  data.mean <-
+    aggregate(data[, 2:7], list(DateTime = data$DateTime), mean)
+  data.mean[, 2:4] <- round(data.mean[, 2:4], 2)
+  data.mean[, 5:6] <- round(data.mean[, 5:6], 0)
+  data.mean[, 7] <- round(data.mean[, 7], 2)
+  write.csv(
+    data.mean,
+    file = paste(strsplit(
+      input, split = ".", fixed = TRUE
+    )[[1]][1],
+    "mean.csv", sep = ""),
+    row.names = FALSE
+  )
+}
+
+AverageDataByDateTime("drake2.csv")
 
 data.plots <- read.csv("drake2mean.csv")
 data.plots$DateTime <-
