@@ -62,16 +62,16 @@ void setup() {
  * loop function
  */
 void loop() {
-  if (!digitalRead(BUTTON_A)) {
-    displayBME = true;
-    displaySI = false;
-  } else if (!digitalRead(BUTTON_B)) {
-    displayBME = false;
-    displaySI = true;
-  } else if (!digitalRead(BUTTON_C)) {
+  if (!digitalRead(BUTTON_C)) {
     displayBME = false;
     displaySI = false;
     clearScreen();
+  } else if (!digitalRead(BUTTON_B)) {
+    displayBME = false;
+    displaySI = true;
+  } else if (!digitalRead(BUTTON_A)) {
+    displayBME = true;
+    displaySI = false;
   }
 
   if (millis() - displayTimer >= DISPLAY_DELAY) {
