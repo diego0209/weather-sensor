@@ -12,4 +12,3 @@ Software for the programming of a mobile meteorological station using the follow
 In addition, an R script was made for data processing and plotting.
 
 This work was done at the University of Costa Rica for the TCU-675.
-
