@@ -231,7 +231,7 @@ void displayBME280Data(float temp, float pressure, float humidity) {
   display.println(buffer);
   sprintf(buffer, "Press: %.2f hPa", pressure);
   display.println(buffer);
-  sprintf(buffer, "Hum: %.2f %", humidity);
+  sprintf(buffer, "Hum: %.2f %%", humidity);
   display.println(buffer);
   display.display();
   display.setCursor(0, 0);
