@@ -1,40 +1,25 @@
 # setwd("/path/to/directory/")
 setwd("~/tcu/")
+input.file <- "drake2.csv"
 
-AverageDataByDateTime <- function(input.file) {
-  data <- read.csv(input.file)
-  data.mean <-
-    aggregate(data[, 2:7], list(DateTime = data$DateTime), mean)
-  data.mean[, 2:4] <- round(data.mean[, 2:4], 2)
-  data.mean[, 5:6] <- round(data.mean[, 5:6], 0)
-  data.mean[, 7] <- round(data.mean[, 7], 2)
-  write.csv(
-    data.mean,
-    file = paste(strsplit(
-      input, split = ".", fixed = TRUE
-    )[[1]][1],
-    "mean.csv", sep = ""),
-    row.names = FALSE
-  )
-}
-
-AverageDataByDateTime("drake2.csv")
-
-data.plots <- read.csv("drake2mean.csv")
-data.plots$DateTime <-
-  as.POSIXct(data.plots$DateTime, tz = "", "%Y-%m-%dT%H:%M:%S")
+data <- read.csv(input.file)
+data$DateTime <-
+  as.POSIXct(data$DateTime, tz = "", "%Y-%m-%dT%H:%M:%S")
 
 library(pastecs)
 data.desc <- stat.desc(
-  data.plots[, 2:7],
+  data[, 2:7],
   basic = TRUE,
   desc = TRUE,
   norm = FALSE,
   p = 0.95
 )
 data.desc <- round(data.desc, 2)
-print(data.desc)
-write.csv(data.desc, file = "drake2desc.csv", row.names = TRUE)
+write.csv(data.desc,
+          file = paste(strsplit(
+            input, split = ".", fixed = TRUE
+          )[[1]][1], "desc.csv", sep = ""),
+          row.names = TRUE)
 
 library(ggplot2)
 library(viridis)
@@ -85,12 +70,12 @@ PlotData <-
     return(plot)
   }
 
-tp <- PlotData(
-  data.plots,
-  data.plots$DateTime,
-  data.plots$Temp,
+temp.plot <- PlotData(
+  data,
+  data$DateTime,
+  data$Temp,
   format(
-    data.plots$DateTime,
+    data$DateTime,
     format = "%d",
     tz = "",
     usetz = FALSE
@@ -99,14 +84,14 @@ tp <- PlotData(
   "Date",
   "Temperature (°C)"
 )
-print(tp)
+print(temp.plot)
 
-pp <- PlotData(
-  data.plots,
-  data.plots$DateTime,
-  data.plots$Pressure,
+press.plot <- PlotData(
+  data,
+  data$DateTime,
+  data$Pressure,
   format(
-    data.plots$DateTime,
+    data$DateTime,
     format = "%d",
     tz = "",
     usetz = FALSE
@@ -115,14 +100,14 @@ pp <- PlotData(
   "Date",
   "Atmospheric pressure (hPa)"
 )
-print(pp)
+print(press.plot)
 
-hp <- PlotData(
-  data.plots,
-  data.plots$DateTime,
-  data.plots$Humidity,
+hum.plot <- PlotData(
+  data,
+  data$DateTime,
+  data$Humidity,
   format(
-    data.plots$DateTime,
+    data$DateTime,
     format = "%d",
     tz = "",
     usetz = FALSE
@@ -131,14 +116,14 @@ hp <- PlotData(
   "Date",
   "Humidity (%)"
 )
-print(hp)
+print(hum.plot)
 
-vlp <- PlotData(
-  data.plots,
-  data.plots$DateTime,
-  data.plots$Visible,
+visible.plot <- PlotData(
+  data,
+  data$DateTime,
+  data$Visible,
   format(
-    data.plots$DateTime,
+    data$DateTime,
     format = "%d",
     tz = "",
     usetz = FALSE
@@ -147,14 +132,14 @@ vlp <- PlotData(
   "Date",
   "Visible light"
 )
-print(vlp)
+print(visible.plot)
 
-irp <- PlotData(
-  data.plots,
-  data.plots$DateTime,
-  data.plots$IR,
+ir.plot <- PlotData(
+  data,
+  data$DateTime,
+  data$IR,
   format(
-    data.plots$DateTime,
+    data$DateTime,
     format = "%d",
     tz = "",
     usetz = FALSE
@@ -163,14 +148,14 @@ irp <- PlotData(
   "Date",
   "Infrared light"
 )
-print(irp)
+print(ir.plot)
 
-uvp <- PlotData(
-  data.plots,
-  data.plots$DateTime,
-  data.plots$UV,
+uv.plot <- PlotData(
+  data,
+  data$DateTime,
+  data$UV,
   format(
-    data.plots$DateTime,
+    data$DateTime,
     format = "%d",
     tz = "",
     usetz = FALSE
@@ -179,4 +164,30 @@ uvp <- PlotData(
   "Date",
   "UV index"
 )
-print(uvp)
+print(uv.plot)
+
+AverageDataByDateTime <- function(input.file) {
+  # Averages data by date and time
+  #
+  # Args:
+  #   input.file: file to read.
+  #
+  # Returns:
+  #   Averaged data frame
+  data.mean <-
+    aggregate(input.data[, 2:7], list(DateTime = input.data$DateTime), mean)
+  data.mean[, 2:4] <- round(data.mean[, 2:4], 2)
+  data.mean[, 5:6] <- round(data.mean[, 5:6], 0)
+  data.mean[, 7] <- round(data.mean[, 7], 2)
+  write.csv(
+    data.mean,
+    file = paste(strsplit(
+      input, split = ".", fixed = TRUE
+    )[[1]][1],
+    "mean.csv", sep = ""),
+    row.names = FALSE
+  )
+  return(data.mean)
+}
+
+AverageDataByDateTime("drake2.csv")

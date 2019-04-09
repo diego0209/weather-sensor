@@ -11,7 +11,7 @@
   * 4.7 volts battery
   * Micro SD card
 
-  @date 05/03/2019
+  @date 09/04/2019
   @author Luis Diego Mora J.
 */
 
@@ -227,11 +227,11 @@ void writeBME280Data(File dataFile, bool displayEnabled) {
  */
 void displayBME280Data(float temp, float pressure, float humidity) {
   char buffer[18] = "";
-  sprintf(buffer, "Temp: %f %cC", temp, (char)247);
+  sprintf(buffer, "Temp: %.2f %cC", temp, (char)247);
   display.println(buffer);
-  sprintf(buffer, "Press: %f hPa", pressure);
+  sprintf(buffer, "Press: %.2f hPa", pressure);
   display.println(buffer);
-  sprintf(buffer, "Hum: %f %", humidity);
+  sprintf(buffer, "Hum: %.2f %", humidity);
   display.println(buffer);
   display.display();
   display.setCursor(0, 0);
@@ -244,12 +244,12 @@ void displayBME280Data(float temp, float pressure, float humidity) {
  */
 void writeSI1145Data(File dataFile, bool displayEnabled) {
   String dataString = "";
-  float visible;
+  int visible;
   visible = si1145.readVisible();
   dataString += String(visible);
   dataString += ",";
 
-  float irLight;
+  int irLight;
   irLight = si1145.readIR();
   dataString += String(irLight);
   dataString += ",";
@@ -271,13 +271,13 @@ void writeSI1145Data(File dataFile, bool displayEnabled) {
  * @param irLight infrared light
  * @param uvIndex UV light index
  */
-void displaySI1145Data(float visible, float irLight, float uvIndex) {
+void displaySI1145Data(int visible, int irLight, float uvIndex) {
   char buffer[18] = "";
-  sprintf(buffer, "Vis. light: %f", visible);
+  sprintf(buffer, "Vis. light: %i", visible);
   display.println(buffer);
-  sprintf(buffer, "IR light: %f", irLight);
+  sprintf(buffer, "IR light: %i", irLight);
   display.println(buffer);
-  sprintf(buffer, "UV index: %f", uvIndex);
+  sprintf(buffer, "UV index: %.2f", uvIndex);
   display.println(buffer);
   display.display();
   display.setCursor(0, 0);
