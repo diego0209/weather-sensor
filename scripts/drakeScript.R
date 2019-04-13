@@ -53,8 +53,6 @@ PlotData <-
       scale_color_viridis(discrete = TRUE,
                           direction = -1,
                           name = "Day") +
-      geom_point() +
-      labs(title = plot.title, x = x.title, y = y.title) +
       theme(
         plot.title = element_text(size = 40),
         axis.text.x = element_text(size = 25),
@@ -66,7 +64,9 @@ PlotData <-
         panel.background = element_rect(fill = "grey95"),
         panel.grid.major = element_line(colour = "white", size = 2),
         panel.grid.minor = element_line(colour = "white", size = 1)
-      )
+      ) +
+      geom_point() +
+      labs(title = plot.title, x = x.title, y = y.title)
     return(plot)
   }
 
