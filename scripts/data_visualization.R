@@ -13,13 +13,11 @@ data.desc <- stat.desc(
   basic = TRUE,
   desc = TRUE,
   norm = FALSE,
-  p = 0.95
+  p = 0.88
 )
-data.desc <- round(data.desc, 2)
+data.desc <- round(data.desc, 4)
 write.csv(data.desc,
-          file = paste(strsplit(
-            input, split = ".", fixed = TRUE
-          )[[1]][1], "desc.csv", sep = ""),
+          file = "drake2desc.csv",
           row.names = TRUE)
 
 PlotData <-
@@ -52,16 +50,16 @@ PlotData <-
                           direction = -1,
                           name = "Day") +
       theme(
-        plot.title = element_text(size = 40),
+        # plot.title = element_text(size = 40),
         axis.text.x = element_text(size = 25),
         axis.text.y = element_text(size = 25),
         axis.title.x = element_text(size = 35),
         axis.title.y = element_text(size = 35),
         legend.title = element_text(size = 35),
-        legend.text = element_text(size = 25),
-        panel.background = element_rect(fill = "grey95"),
-        panel.grid.major = element_line(colour = "white", size = 2),
-        panel.grid.minor = element_line(colour = "white", size = 1)
+        legend.text = element_text(size = 25)
+        # panel.background = element_rect(fill = "grey95"),
+        # panel.grid.major = element_line(colour = "white", size = 2),
+        # panel.grid.minor = element_line(colour = "white", size = 1)
       ) +
       geom_point() +
       labs(title = plot.title, x = x.title, y = y.title)
@@ -78,7 +76,7 @@ temp.plot <- PlotData(
     tz = "",
     usetz = FALSE
   ),
-  "Temperature vs Date",
+  "",
   "Date",
   "Temperature (°C)"
 )
@@ -94,7 +92,7 @@ press.plot <- PlotData(
     tz = "",
     usetz = FALSE
   ),
-  "Atmospheric pressure vs Date",
+  "",
   "Date",
   "Atmospheric pressure (hPa)"
 )
@@ -110,9 +108,9 @@ hum.plot <- PlotData(
     tz = "",
     usetz = FALSE
   ),
-  "Humidity vs Date",
+  "",
   "Date",
-  "Humidity (%)"
+  "Relative humidity (%)"
 )
 print(hum.plot)
 
@@ -126,7 +124,7 @@ visible.plot <- PlotData(
     tz = "",
     usetz = FALSE
   ),
-  "Visible light vs Date",
+  "",
   "Date",
   "Visible light"
 )
@@ -142,7 +140,7 @@ ir.plot <- PlotData(
     tz = "",
     usetz = FALSE
   ),
-  "Infrared light vs Date",
+  "",
   "Date",
   "Infrared light"
 )
@@ -158,7 +156,7 @@ uv.plot <- PlotData(
     tz = "",
     usetz = FALSE
   ),
-  "UV index vs Date",
+  "",
   "Date",
   "UV index"
 )
